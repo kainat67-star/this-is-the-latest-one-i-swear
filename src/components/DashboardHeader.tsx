@@ -1,7 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Bell, LogOut, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,10 +51,14 @@ const defaultMeta = PAGE_META["/"];
 
 export function DashboardHeader() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const meta = PAGE_META[pathname] ?? defaultMeta;
 
   const handleLogout = () => {
+    logout();
     toast.success("Signed out", { description: "You have been logged out successfully." });
+    navigate("/login", { replace: true });
   };
 
   return (

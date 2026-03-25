@@ -16,6 +16,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
+import { SITE_NAME, SITE_TAGLINE } from "@/lib/brand";
 
 const navItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -108,8 +109,8 @@ function SidebarContent({
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <span className="text-foreground font-bold text-[17px] tracking-tight block leading-none">AdPulse</span>
-              <span className="text-[10px] text-muted-foreground font-medium tracking-wider uppercase">Analytics</span>
+              <span className="text-foreground font-bold text-[17px] tracking-tight block leading-none">{SITE_NAME}</span>
+              <span className="text-[10px] text-muted-foreground font-medium tracking-wider uppercase">{SITE_TAGLINE}</span>
             </div>
           )}
         </div>
