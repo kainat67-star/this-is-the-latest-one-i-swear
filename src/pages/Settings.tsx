@@ -104,13 +104,6 @@ const Settings = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-6">
-        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-2xl font-bold text-foreground tracking-tight">
-          Settings
-        </motion.h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage integrations, account, and preferences</p>
-      </div>
-
       <div className="max-w-3xl space-y-8">
         {/* ── Ad Platform Integrations ── */}
         <section>

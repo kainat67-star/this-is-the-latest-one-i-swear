@@ -112,13 +112,6 @@ function ConfidenceBar({ value }: { value: number }) {
 const Insights = () => {
   return (
     <DashboardLayout>
-      <div className="mb-6">
-        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-2xl font-bold text-foreground tracking-tight">
-          Insights & Recommendations
-        </motion.h1>
-        <p className="text-sm text-muted-foreground mt-1">AI-powered analysis of your advertising performance</p>
-      </div>
-
       {/* AI Summary */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

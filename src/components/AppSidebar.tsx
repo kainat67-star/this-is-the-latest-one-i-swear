@@ -6,8 +6,6 @@ import {
   BarChart3,
   Table2,
   Lightbulb,
-  Settings,
-  LogOut,
   Menu,
   X,
   Activity,
@@ -15,8 +13,6 @@ import {
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react";
-import { toast } from "sonner";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
@@ -26,7 +22,6 @@ const navItems = [
   { title: "Channel Comparison", url: "/channels", icon: BarChart3 },
   { title: "Campaign Details", url: "/campaigns", icon: Table2 },
   { title: "Insights", url: "/insights", icon: Lightbulb },
-  { title: "Settings", url: "/settings", icon: Settings },
 ] as const;
 
 function NavItem({
@@ -98,11 +93,6 @@ function SidebarContent({
 }) {
   const location = useLocation();
 
-  const handleLogout = () => {
-    toast.success("Signed out", { description: "You have been logged out successfully." });
-    onNavigate();
-  };
-
   return (
     <div className="flex flex-col h-full min-h-0">
       <div
@@ -170,7 +160,7 @@ function SidebarContent({
         )}
       </div>
 
-      <nav className="flex-1 px-2 space-y-0.5 min-h-0 overflow-y-auto">
+      <nav className="flex-1 px-2 pb-4 space-y-0.5 min-h-0 overflow-y-auto">
         {navItems.map((item) => (
           <NavItem
             key={item.url}
@@ -182,58 +172,6 @@ function SidebarContent({
           />
         ))}
       </nav>
-
-      <div className={cn("p-3 mt-auto border-t border-border/40 space-y-2 shrink-0", collapsed && "px-2")}>
-        <div className={cn("flex items-center gap-2", collapsed ? "flex-col" : "flex-row")}>
-          <ThemeToggle collapsed={collapsed} className={cn(collapsed ? "w-full" : "shrink-0")} />
-        </div>
-
-        <div
-          className={cn(
-            "rounded-xl border border-border/50 bg-accent/25 backdrop-blur-sm",
-            collapsed ? "p-2 flex flex-col items-center gap-2" : "p-3",
-          )}
-        >
-          <div className={cn("flex items-center gap-3", collapsed ? "flex-col" : "flex-row w-full")}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
-              JD
-            </div>
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate leading-tight">John Doe</p>
-                <p className="text-[11px] text-muted-foreground truncate">john@company.com</p>
-              </div>
-            )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className={cn(
-                    "rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]",
-                    collapsed ? "p-2" : "p-2",
-                  )}
-                  aria-label="Log out"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="text-xs">
-                Log out
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          {!collapsed && (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="mt-3 w-full text-xs font-semibold py-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
-            >
-              Logout
-            </button>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

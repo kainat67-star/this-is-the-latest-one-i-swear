@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
+import { DashboardHeader } from "./DashboardHeader";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +24,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           collapsed ? "lg:ml-[88px]" : "lg:ml-[264px]",
         )}
       >
-        <div className="p-5 md:p-8 lg:p-10 pt-16 lg:pt-10 max-w-[1600px] mx-auto w-full">
+        <div className="mx-auto flex w-full max-w-[1600px] flex-col px-5 pb-5 pt-16 md:px-8 md:pb-8 lg:px-10 lg:pb-10 lg:pt-6">
+          <DashboardHeader />
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

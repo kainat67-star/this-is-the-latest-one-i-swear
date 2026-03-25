@@ -159,17 +159,6 @@ const Campaigns = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <motion.h1
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-[28px] font-extrabold text-foreground tracking-tight leading-none"
-        >
-          Campaign Details
-        </motion.h1>
-        <p className="text-sm text-muted-foreground mt-2">Search, filter, and drill into performance by campaign</p>
-      </div>
-
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

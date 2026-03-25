@@ -109,13 +109,6 @@ const Channels = () => {
 
   return (
     <DashboardLayout>
-      <div className="mb-6">
-        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-2xl font-bold text-foreground tracking-tight">
-          Channel comparison
-        </motion.h1>
-        <p className="text-sm text-muted-foreground mt-1">Budget allocation and spend vs revenue across ad platforms</p>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
