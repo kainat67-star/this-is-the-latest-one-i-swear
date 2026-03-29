@@ -5,8 +5,14 @@ import type { Database } from "@/lib/database/types";
  * Accept both Vite and Next-style public env names.
  * Vite only exposes NEXT_PUBLIC_* if `envPrefix` includes it (set in vite.config.ts).
  */
-const supabaseUrl =
+/** Trailing slashes break `/functions/v1/...` and `/rest/v1/...` resolution in some setups. */
+function normalizeSupabaseUrl(url: string): string {
+  return url.trim().replace(/\/+$/, "");
+}
+
+const supabaseUrlRaw =
   import.meta.env.VITE_SUPABASE_URL ?? import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseUrl = supabaseUrlRaw ? normalizeSupabaseUrl(supabaseUrlRaw) : undefined;
 
 const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -14,7 +20,7 @@ const supabaseAnonKey =
 let client: SupabaseClient<Database> | null = null;
 
 function assertEnv(): { url: string; key: string } {
-  if (!supabaseUrl?.trim() || !supabaseAnonKey?.trim()) {
+  if (!supabaseUrl || !supabaseAnonKey?.trim()) {
     throw new Error(
       "Missing Supabase env: set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or NEXT_PUBLIC_* equivalents). See .env.example.",
     );

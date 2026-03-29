@@ -1,7 +1,9 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { getSupabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/hooks/useAuth";
 import {
   User,
   Mail,
@@ -19,7 +21,7 @@ import {
 
 /* ─── Platform Data ─── */
 const platforms = [
-  { id: "google", name: "Google Ads", color: "#4285f4", connected: true, account: "ads@company.com" },
+  { id: "google", name: "Google Ads", color: "#4285f4", connected: false, account: "" },
   { id: "meta", name: "Meta Ads", color: "#1877f2", connected: true, account: "business@company.com" },
   { id: "tiktok", name: "TikTok Ads", color: "#fe2c55", connected: false, account: "" },
   { id: "snap", name: "Snapchat Ads", color: "#FFFC00", connected: false, account: "" },
@@ -91,12 +93,60 @@ const stagger = {
 /* ─── Page ─── */
 const Settings = () => {
   const { setTheme, resolvedTheme } = useTheme();
+  const supabase = getSupabase();
+  const { userId } = useAuth();
   const [connections, setConnections] = useState(platforms);
+  const [googleAdsConnected, setGoogleAdsConnected] = useState(false);
+  const [googleAdsEmail, setGoogleAdsEmail] = useState("");
   const [name, setName] = useState("John Doe");
   const [email, setEmail] = useState("john@company.com");
   const [currency, setCurrency] = useState("USD ($)");
   const [timezone, setTimezone] = useState("America/New_York (EST)");
   const darkMode = resolvedTheme === "dark";
+
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (!userId) return;
+      const { data, error } = await supabase
+        .from("ad_accounts")
+        .select("id, account_name")
+        .eq("user_id", userId)
+        .eq("platform", "google_ads")
+        .maybeSingle();
+
+      if (error) {
+        if (error.code === "PGRST205" || error.message?.includes("Could not find the table")) {
+          console.error(
+            "Google Ads connection: table public.ad_accounts is missing in this Supabase project. Open the SQL Editor and run supabase/migrations/20250325000000_initial_schema.sql (or supabase db push).",
+          );
+        } else {
+          console.error("Failed to load Google Ads connection:", error);
+        }
+        setGoogleAdsConnected(false);
+        setGoogleAdsEmail("");
+        return;
+      }
+      if (data) {
+        setGoogleAdsConnected(true);
+        setGoogleAdsEmail(data.account_name ?? "");
+      } else {
+        setGoogleAdsConnected(false);
+        setGoogleAdsEmail("");
+      }
+    };
+    void checkConnection();
+  }, [userId, supabase]);
+
+  const handleDisconnectGoogleAds = async () => {
+    if (!userId) return;
+    const { error } = await supabase.from("ad_accounts").delete().eq("user_id", userId).eq("platform", "google_ads");
+    if (error) {
+      console.error("Failed to disconnect Google Ads:", error);
+      return;
+    }
+    setGoogleAdsConnected(false);
+    setGoogleAdsEmail("");
+  };
 
   const toggleConnection = (id: string) => {
     setConnections((prev) => prev.map((p) => p.id === id ? { ...p, connected: !p.connected } : p));
@@ -111,38 +161,85 @@ const Settings = () => {
             <Link2 className="w-4 h-4 text-primary" /> Ad Platform Integrations
           </motion.h2>
           <motion.div variants={stagger.container} initial="initial" animate="animate" className="space-y-3">
-            {connections.map((p) => (
-              <motion.div
-                key={p.id}
-                variants={stagger.item}
-                className="glass-card-hover flex flex-col gap-4 p-4 sm:flex-row sm:items-center"
-              >
-                <div className="flex min-w-0 flex-1 items-start gap-4">
-                  <PlatformLogo color={p.color} name={p.name} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">{p.name}</p>
-                    {p.connected ? (
-                      <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Check className="h-3 w-3 shrink-0 text-primary" /> Connected
-                        {p.account ? ` · ${p.account}` : ""}
-                      </p>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">Not connected</p>
-                    )}
-                  </div>
-                </div>
-                <button
-                  onClick={() => toggleConnection(p.id)}
-                  className={`flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg px-3.5 py-2.5 text-xs font-medium transition-colors sm:w-auto sm:py-2 ${
-                    p.connected
-                      ? "bg-danger/10 text-danger hover:bg-danger/20"
-                      : "bg-primary/10 text-primary hover:bg-primary/20"
-                  }`}
+            {connections.map((p) => {
+              const isGoogle = p.id === "google";
+              const googleRowConnected = isGoogle && googleAdsConnected;
+              const rowConnected = isGoogle ? googleAdsConnected : p.connected;
+              const accountLine = isGoogle ? googleAdsEmail : p.account;
+
+              return (
+                <motion.div
+                  key={p.id}
+                  variants={stagger.item}
+                  className="glass-card-hover flex flex-col gap-4 p-4 sm:flex-row sm:items-center"
                 >
-                  {p.connected ? <><Unlink className="w-3 h-3" /> Disconnect</> : <><Link2 className="w-3 h-3" /> Connect</>}
-                </button>
-              </motion.div>
-            ))}
+                  <div className="flex min-w-0 flex-1 items-start gap-4">
+                    <PlatformLogo color={p.color} name={p.name} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground">{p.name}</p>
+                      {rowConnected ? (
+                        <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Check className="h-3 w-3 shrink-0 text-primary" /> Connected
+                          {accountLine ? ` · ${accountLine}` : ""}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Not connected</p>
+                      )}
+                    </div>
+                  </div>
+                  {isGoogle ? (
+                    googleRowConnected ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleDisconnectGoogleAds()}
+                        className="flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-danger/10 px-3.5 py-2.5 text-xs font-medium text-danger transition-colors hover:bg-danger/20 sm:w-auto sm:py-2"
+                      >
+                        <Unlink className="h-3 w-3" /> Disconnect
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const params = new URLSearchParams({
+                            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+                            redirect_uri: `${window.location.origin}/auth/google-ads/callback`,
+                            response_type: 'code',
+                            scope: 'https://www.googleapis.com/auth/adwords email profile',
+                            access_type: 'offline',
+                            prompt: 'consent',
+                          })
+                          window.location.href =
+                            `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
+                        }}
+                        className="flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary/10 px-3.5 py-2.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 sm:w-auto sm:py-2"
+                      >
+                        <Link2 className="h-3 w-3" /> Connect
+                      </button>
+                    )
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => toggleConnection(p.id)}
+                      className={`flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg px-3.5 py-2.5 text-xs font-medium transition-colors sm:w-auto sm:py-2 ${
+                        p.connected
+                          ? "bg-danger/10 text-danger hover:bg-danger/20"
+                          : "bg-primary/10 text-primary hover:bg-primary/20"
+                      }`}
+                    >
+                      {p.connected ? (
+                        <>
+                          <Unlink className="h-3 w-3" /> Disconnect
+                        </>
+                      ) : (
+                        <>
+                          <Link2 className="h-3 w-3" /> Connect
+                        </>
+                      )}
+                    </button>
+                  )}
+                </motion.div>
+              );
+            })}
           </motion.div>
         </section>
 

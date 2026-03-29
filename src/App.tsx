@@ -16,6 +16,8 @@ import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/Login.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import Terms from "./pages/Terms.tsx";
+import GoogleAdsCallback from "./pages/GoogleAdsCallback";
+import TestEdgeFunction from "./pages/TestEdgeFunction";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/auth/google-ads/callback" element={<GoogleAdsCallback />} />
+              <Route path="/test-edge" element={<TestEdgeFunction />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/channels" element={<Channels />} />
